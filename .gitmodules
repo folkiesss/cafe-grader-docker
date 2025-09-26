@@ -1,0 +1,3 @@
+[submodule "cafe-grader-web"]
+	path = cafe-grader-web
+	url = https://github.com/nattee/cafe-grader-web.git
