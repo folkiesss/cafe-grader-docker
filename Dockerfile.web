@@ -1,0 +1,61 @@
+FROM ubuntu:noble
+
+# Use bash as the default shell
+SHELL ["/bin/bash", "-l", "-c"]
+
+RUN apt update && apt install -y \
+    apache2 \
+    apache2-dev \
+    # mysql-server \
+    git \
+    software-properties-common \
+    libmysqlclient-dev \
+    libcap-dev \
+    apt-transport-https \
+    nodejs \
+    postgresql \
+    postgresql-server-dev-all \
+    unzip
+
+# install RVM
+RUN apt-add-repository -y ppa:rael-gc/rvm && \
+    apt update && \
+    apt install -y rvm
+
+# install Ruby 3.4.4
+RUN /bin/bash -l -c "rvm install 3.4.4" && \
+    /bin/bash -l -c "rvm use 3.4.4"
+
+# install nodejs 22.x
+RUN curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt install -y nodejs
+
+# install yarn
+RUN corepack enable
+RUN corepack prepare yarn@stable --activate
+
+# install bundler
+COPY cafe-grader-web /cafe-grader/web
+WORKDIR /cafe-grader/web
+RUN bundle
+
+# Copy configuration files from samples and process environment variables
+RUN cp config/application.rb.SAMPLE config/application.rb
+RUN cp config/database.yml.SAMPLE config/database.yml
+RUN cp config/worker.yml.SAMPLE config/worker.yml
+
+# Process application.rb to use environment variable for timezone
+RUN sed -i 's/config\.time_zone = "Asia\/Bangkok"/config.time_zone = ENV.fetch("RAILS_TIME_ZONE", "Asia\/Bangkok")/' /cafe-grader/web/config/application.rb
+
+# Process database.yml to use environment variables
+RUN sed -i 's/username: grader/username: <%= ENV.fetch("MYSQL_USER", "grader_user") %>/' /cafe-grader/web/config/database.yml && \
+    sed -i 's/password: grader/password: <%= ENV.fetch("MYSQL_PASSWORD", "grader_pass") %>/' /cafe-grader/web/config/database.yml && \
+    sed -i 's/host: localhost/host: <%= ENV.fetch("SQL_DATABASE_CONTAINER_HOST", "cafe-grader-db") %>/' /cafe-grader/web/config/database.yml && \
+    sed -i 's/socket: \/var\/run\/mysqld\/mysqld\.sock/port: <%= ENV.fetch("SQL_DATABASE_PORT", "3306") %>/' /cafe-grader/web/config/database.yml
+
+# Install frontend dependencies
+RUN yarn
+
+# Clean up apt cache to reduce image size
+RUN rm -rf /var/lib/apt/lists/*
