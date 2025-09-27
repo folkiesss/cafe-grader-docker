@@ -1,0 +1,61 @@
+FROM ubuntu:noble
+
+# Use bash as the default shell
+SHELL ["/bin/bash", "-l", "-c"]
+
+RUN apt update && apt install -y \
+    apache2 \
+    apache2-dev \
+    git \
+    software-properties-common \
+    libmysqlclient-dev \
+    libcap-dev \
+    apt-transport-https \
+    nodejs \
+    postgresql \
+    postgresql-server-dev-all \
+    unzip
+
+# Install programming language compilers and runtimes
+RUN apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go cargo python3-venv
+
+# install RVM
+RUN apt-add-repository -y ppa:rael-gc/rvm && \
+    apt update && \
+    apt install -y rvm
+
+# install Ruby 3.4.4
+RUN /bin/bash -l -c "rvm install 3.4.4" && \
+    /bin/bash -l -c "rvm use 3.4.4"
+
+# install IOI Isolate
+RUN apt install -y libcap-dev libsystemd-dev
+RUN git clone https://github.com/ioi/isolate.git /isolate
+RUN cd /isolate && make isolate && make install
+
+COPY scripts/set-ioi-isolate.service /etc/systemd/system/set-ioi-isolate.service
+RUN systemctl enable set-ioi-isolate.service && \
+    systemctl enable isolate.service
+
+# install bundler
+COPY cafe-grader-web /cafe-grader/web
+WORKDIR /cafe-grader/web
+RUN bundle
+
+# Process worker configuration file
+RUN cp config/worker.yml.SAMPLE config/worker.yml
+RUN sed -i 's|web: http://localhost|web: http://cafe-grader-web:3000|' config/worker.yml
+
+# Set up Python virtual environment for grader
+RUN python3 -m venv /venv/grader
+
+# Set up Solid Queue service
+COPY scripts/solid-queue.service /etc/systemd/system/solid-queue.service
+RUN systemctl enable solid-queue.service
+
+# add cron job to clean up isolate_submission directory
+RUN apt install -y cron
+RUN echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mtime +1 -exec rm -rf {} \\;" | crontab -
+
+# Clean up apt cache to reduce image size
+RUN apt clean && rm -rf /var/lib/apt/lists/*

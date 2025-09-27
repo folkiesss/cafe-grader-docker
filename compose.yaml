@@ -15,6 +15,9 @@ services:
       - SQL_DATABASE_CONTAINER_HOST=${SQL_DATABASE_CONTAINER_HOST}
       - SQL_DATABASE_PORT=${SQL_DATABASE_PORT}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+    volumes:
+      - cafe-grader-storage:/cafe-grader/web/storage
+      - cafe-grader-logs:/cafe-grader/web/log
     command: >
       bash -l -c "
         cd /cafe-grader/web &&
@@ -27,6 +30,39 @@ services:
     depends_on:
       cafe-grader-db:
         condition: service_healthy
+
+  cafe-grader-worker:
+    build:
+      dockerfile: Dockerfile.worker
+      context: .
+    image: cafe-grader-worker:latest
+    container_name: cafe-grader-worker
+    privileged: true  # Required for IOI Isolate
+    cap_add:
+      - SYS_ADMIN
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - cafe-grader-judge:/cafe-grader/judge
+      - cafe-grader-logs:/cafe-grader/web/log
+    environment:
+      - RAILS_ENV=production
+      - PYTHON_PACKAGES=${PYTHON_PACKAGES:-numpy}
+    command: >
+      bash -l -c "
+        echo 'Installing Python packages: ${PYTHON_PACKAGES}' &&
+        source /venv/grader/bin/activate &&
+        pip install --upgrade pip &&
+        pip install ${PYTHON_PACKAGES} &&
+        service cron start &&
+        isolate-check-environment &&
+        cd /cafe-grader/web &&
+        RAILS_ENV=production bundle exec rails r 'Grader.restart(${GRADER_WORKER_THREADS})' &&
+        whenever --update-crontab &&
+        tail -f /dev/null
+      "
 
   cafe-grader-db:
     image: mysql:latest
@@ -50,4 +86,6 @@ services:
 
 volumes:
   db_data:
-  cafe-grader-problems:
+  cafe-grader-storage:      # Rails Active Storage (web service)
+  cafe-grader-judge:        # Worker judge processing directories
+  cafe-grader-logs:         # Shared logs between services
