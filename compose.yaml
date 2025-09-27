@@ -16,8 +16,8 @@ services:
       - SQL_DATABASE_PORT=${SQL_DATABASE_PORT}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
     volumes:
-      - cafe-grader-storage:/cafe-grader/web/storage
-      - cafe-grader-logs:/cafe-grader/web/log
+      - cafe-grader-data:/cafe-grader/judge
+      # - cafe-grader-logs:/cafe-grader/web/log.  # Uncomment this line to enable log persistence
     command: >
       bash -l -c "
         cd /cafe-grader/web &&
@@ -45,28 +45,36 @@ services:
       - apparmor:unconfined
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
-      - cafe-grader-judge:/cafe-grader/judge
-      - cafe-grader-logs:/cafe-grader/web/log
+      - cafe-grader-data:/cafe-grader/judge
+      # - cafe-grader-logs:/cafe-grader/web/log.  # Uncomment this line to enable log persistence
     environment:
       - RAILS_ENV=production
+      - RAILS_TIME_ZONE=${RAILS_TIME_ZONE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - SQL_DATABASE_CONTAINER_HOST=${SQL_DATABASE_CONTAINER_HOST}
+      - SQL_DATABASE_PORT=${SQL_DATABASE_PORT}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - PYTHON_PACKAGES=${PYTHON_PACKAGES:-numpy}
     command: >
       bash -l -c "
+        echo 'Setting up IOI Isolate...' &&
+        mkdir -p /run/isolate/cgroup &&
+        chmod 755 /run/isolate/cgroup &&
         echo 'Installing Python packages: ${PYTHON_PACKAGES}' &&
         source /venv/grader/bin/activate &&
-        pip install --upgrade pip &&
         pip install ${PYTHON_PACKAGES} &&
         service cron start &&
-        isolate-check-environment &&
         cd /cafe-grader/web &&
         RAILS_ENV=production bundle exec rails r 'Grader.restart(${GRADER_WORKER_THREADS})' &&
         whenever --update-crontab &&
+        rails solid_queue:start &&
         tail -f /dev/null
       "
 
   cafe-grader-db:
     image: mysql:latest
-    container_name: cafe-grader-db
+    container_name: ${SQL_DATABASE_CONTAINER_HOST}
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -85,7 +93,6 @@ services:
       start_period: 30s
 
 volumes:
+  cafe-grader-data:
+  # cafe-grader-logs:  # Uncomment this line to enable log persistence
   db_data:
-  cafe-grader-storage:      # Rails Active Storage (web service)
-  cafe-grader-judge:        # Worker judge processing directories
-  cafe-grader-logs:         # Shared logs between services
