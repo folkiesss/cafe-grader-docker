@@ -37,16 +37,10 @@ services:
       context: .
     image: cafe-grader-worker:latest
     container_name: cafe-grader-worker
-    privileged: true  # Required for IOI Isolate
-    cap_add:
-      - SYS_ADMIN
-      - SYS_PTRACE
-    security_opt:
-      - apparmor:unconfined
+    privileged: true  # Required for systemd and IOI Isolate
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /sys/fs/cgroup:/run/isolate/cgroup:rw
       - cafe-grader-data:/cafe-grader/judge
-      # - cafe-grader-logs:/cafe-grader/web/log.  # Uncomment this line to enable log persistence
     environment:
       - RAILS_ENV=production
       - RAILS_TIME_ZONE=${RAILS_TIME_ZONE}
@@ -56,18 +50,22 @@ services:
       - SQL_DATABASE_PORT=${SQL_DATABASE_PORT}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - PYTHON_PACKAGES=${PYTHON_PACKAGES:-numpy}
+      - GRADER_WORKER_THREADS=${GRADER_WORKER_THREADS:-4}
     command: >
       bash -l -c "
-        echo 'Setting up IOI Isolate...' &&
-        mkdir -p /run/isolate/cgroup &&
-        chmod 755 /run/isolate/cgroup &&
-        echo 'Installing Python packages: ${PYTHON_PACKAGES}' &&
+        /usr/local/bin/set-ioi-isolate &&
+        /usr/local/bin/setup-isolate-cgroups &&
+        /usr/local/bin/isolate-cg-keeper &
+        
         source /venv/grader/bin/activate &&
-        pip install ${PYTHON_PACKAGES} &&
+        pip install ${PYTHON_PACKAGES:-numpy} &&
+        
         service cron start &&
         cd /cafe-grader/web &&
-        RAILS_ENV=production bundle exec rails r 'Grader.restart(${GRADER_WORKER_THREADS})' &&
+
+        RAILS_ENV=production rails r 'Grader.restart($GRADER_WORKER_THREADS)' &&
         whenever --update-crontab &&
+        
         rails solid_queue:start &&
         tail -f /dev/null
       "
@@ -80,8 +78,10 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - "3306:3306"
+    expose:
+      - ${SQL_DATABASE_PORT}
+    # ports:  # Uncomment this block to expose the database port to the host
+    #   - "${SQL_DATABASE_PORT}:${SQL_DATABASE_PORT}"
     volumes:
       - db_data:/var/lib/mysql
       - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
@@ -90,7 +90,6 @@ services:
       timeout: 20s
       retries: 10
       interval: 5s
-      start_period: 30s
 
 volumes:
   cafe-grader-data:

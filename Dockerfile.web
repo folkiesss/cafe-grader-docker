@@ -3,7 +3,8 @@ FROM ubuntu:noble
 # Use bash as the default shell
 SHELL ["/bin/bash", "-l", "-c"]
 
-RUN apt update && apt install -y \
+# Install systemd and required packages
+RUN apt update && apt install -y \ 
     apache2 \
     apache2-dev \
     git \

@@ -32,13 +32,29 @@ This Docker Compose setup consists of **3 containers** for scalabity:
 
 If deploying on a Linux server, you need to enable cgroup memory control and swap accounting:
 
-#### 1. Turn off memory swap (for memory limit function)
+#### 1. Disable Memory Swap (Required for Accurate Memory Limits)
+
+IOI Isolate requires swap to be completely disabled for accurate memory measurement, as memory limits do not affect swapped-out data.
 
 ```bash
+# Temporarily disable swap
 sudo swapoff -a
+
+# Permanently disable swap (edit /etc/fstab and comment out swap entries)
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 ```
 
-#### 2. Enable Kernel Parameters
+#### 2. Configure Security Settings (Recommended)
+
+Set the protected hardlinks sysctl for enhanced security:
+
+```bash
+# Set protected hardlinks (recommended for IOI Isolate security)
+echo "fs.protected_hardlinks = 1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+#### 3. Enable Kernel Parameters
 
 Edit `/etc/default/grub` and modify/add the following line:
 
@@ -46,7 +62,7 @@ Edit `/etc/default/grub` and modify/add the following line:
 GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1"
 ```
 
-#### 3. Update GRUB and Reboot
+#### 4. Update GRUB and Reboot
 
 ```bash
 sudo update-grub
