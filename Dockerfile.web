@@ -1,4 +1,4 @@
-FROM ubuntu:noble
+FROM ubuntu:plucky
 
 # Use bash as the default shell
 SHELL ["/bin/bash", "-l", "-c"]
