@@ -44,17 +44,7 @@ sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 ```
 
-#### 2. Configure Security Settings (Recommended)
-
-Set the protected hardlinks sysctl for enhanced security:
-
-```bash
-# Set protected hardlinks (recommended for IOI Isolate security)
-echo "fs.protected_hardlinks = 1" | sudo tee -a /etc/sysctl.conf
-sudo sysctl -p
-```
-
-#### 3. Enable Kernel Parameters
+#### 2. Enable Kernel Parameters
 
 Edit `/etc/default/grub` and modify/add the following line:
 
@@ -62,7 +52,7 @@ Edit `/etc/default/grub` and modify/add the following line:
 GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1"
 ```
 
-#### 4. Update GRUB and Reboot
+#### 3. Update GRUB and Reboot
 
 ```bash
 sudo update-grub
@@ -94,7 +84,7 @@ docker exec -it cafe-grader-worker isolate-check-environment
 
    ```bash
    # Grader
-   GRADER_WORKER_THREADS=4
+   GRADER_PROCESSES=2
 
    # Python Packages for Judge Environment
    # Space-separated list of Python packages to install in the grader virtual environment

@@ -68,13 +68,9 @@ RUN echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mti
 
 # copy isolate setup scripts
 COPY scripts/set-ioi-isolate.sh /usr/local/bin/set-ioi-isolate
-COPY scripts/setup-isolate-cgroups.sh /usr/local/bin/setup-isolate-cgroups
-COPY scripts/isolate-cg-keeper.sh /usr/local/bin/isolate-cg-keeper
 
 # Make scripts executable
-RUN chmod +x /usr/local/bin/set-ioi-isolate && \
-    chmod +x /usr/local/bin/setup-isolate-cgroups && \
-    chmod +x /usr/local/bin/isolate-cg-keeper
+RUN chmod +x /usr/local/bin/set-ioi-isolate
 
 # Clean up apt cache and temporary files to reduce image size
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

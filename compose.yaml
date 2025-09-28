@@ -39,7 +39,6 @@ services:
     container_name: cafe-grader-worker
     privileged: true  # Required for systemd and IOI Isolate
     volumes:
-      - /sys/fs/cgroup:/run/isolate/cgroup:rw
       - cafe-grader-data:/cafe-grader/judge
     environment:
       - RAILS_ENV=production
@@ -50,20 +49,21 @@ services:
       - SQL_DATABASE_PORT=${SQL_DATABASE_PORT}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - PYTHON_PACKAGES=${PYTHON_PACKAGES:-numpy}
-      - GRADER_WORKER_THREADS=${GRADER_WORKER_THREADS:-4}
+      - GRADER_PROCESSES=${GRADER_PROCESSES:-2}
     command: >
       bash -l -c "
+        echo 0 > /proc/sys/kernel/randomize_va_space &&
         /usr/local/bin/set-ioi-isolate &&
-        /usr/local/bin/setup-isolate-cgroups &&
-        /usr/local/bin/isolate-cg-keeper &
+
+        ln -s /isolate/systemd/isolate.service /etc/systemd/system/ &&
         
         source /venv/grader/bin/activate &&
         pip install ${PYTHON_PACKAGES:-numpy} &&
-        
+
         service cron start &&
         cd /cafe-grader/web &&
 
-        RAILS_ENV=production rails r 'Grader.restart($GRADER_WORKER_THREADS)' &&
+        RAILS_ENV=production rails r 'Grader.restart($GRADER_PROCESSES)' &&
         whenever --update-crontab &&
         
         rails solid_queue:start &&
