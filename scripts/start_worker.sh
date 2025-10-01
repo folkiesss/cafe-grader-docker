@@ -38,3 +38,5 @@ whenever --update-crontab
 
 # start solid_queue
 rails solid_queue:start
+
+echo -e "Grader workers started."
