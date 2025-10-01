@@ -74,7 +74,7 @@ This Docker Compose setup consists of **3 containers** for scalability:
 
 4. **Start worker:**
    ```bash
-   docker exec -it cafe-grader-worker bash -lc "./start_worker.sh &"
+   docker exec cafe-grader-worker bash -lc "./start_worker.sh & > /dev/stdout 2> /dev/stderr"
    ```
 
 5. **Access the application:**
