@@ -1,7 +1,7 @@
 services:
   cafe-grader-web:
     build:
-      dockerfile: Dockerfile.web
+      dockerfile: web.Dockerfile
       context: .
     image: cafe-grader-web:latest
     container_name: cafe-grader-web
@@ -33,7 +33,7 @@ services:
 
   cafe-grader-worker:
     build:
-      dockerfile: Dockerfile.worker
+      dockerfile: worker.Dockerfile
       context: .
     image: cafe-grader-worker:latest
     container_name: cafe-grader-worker
