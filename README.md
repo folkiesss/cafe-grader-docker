@@ -6,6 +6,7 @@ A containerized version of the [CU Cafe Grader](https://github.com/nattee/cafe-g
 
 - [Docker Architecture](#docker-architecture)
 - [Platform Compatibility](#platform-compatibility)
+- [Host Machine Setup](#host-machine-setup)
 - [Quick Start](#quick-start)
 - [Default Credentials](#default-credentials)
 - [Language Setup](#language-setup)
@@ -26,12 +27,56 @@ This Docker Compose setup consists of **3 containers** for scalability:
 
 ## Platform Compatibility
 
-- ✅ **Fully Supported (Native Linux & macOS)**:
-   - Complete IOI Isolate functionality with memory limits  
-- ⚠️ **Partial Support (WSL)**: 
-   - To be tested
-- ⚠️ **Not Tested (Windows Docker Desktop)**:
-   - To be tested
+- ✅ **Fully Supported**:
+   - **Native Linux**: Fully functionbility (requires kernel cgroup configuration)
+   - **macOS**: Full functionality with Docker
+- ⚠️ **Limited Support**: 
+   - **WSL (Windows Subsystem for Linux)**: Works but may affect some binary integrations like VS Code due to systemd compatibility issues
+- ❓ **Untested**:
+   - **Windows Docker Desktop**: Compatibility not yet verified
+
+## Host Machine Setup
+
+Since Docker uses the host's kernel, we need to enable memory cgroups for proper isolation and resource management. This is required for IOI Isolate to function correctly.
+
+> **Note**: This step is only required for Linux machines. macOS and Windows(WSL) users can skip this section.
+
+### **Linux Machine**
+
+1. Edit the GRUB configuration file:
+   ```bash
+   sudo vi /etc/default/grub
+   ```
+
+2. Add `cgroup_enable=memory` to the `GRUB_CMDLINE_LINUX_DEFAULT` line:
+   ```bash
+   GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory"
+   ```
+
+3. Update GRUB and reboot:
+   ```bash
+   sudo update-grub
+   sudo reboot
+   ```
+
+### **Raspberry Pi**
+
+1. Edit the boot configuration:
+   ```bash
+   sudo vi /boot/firmware/cmdline.txt
+   ```
+
+2. Add `cgroup_enable=memory` to the existing line:
+   ```
+   console=serial0,115200 multipath=off ... fixrtc cgroup_enable=memory
+   ```
+
+3. Reboot the system:
+   ```bash
+   sudo reboot
+   ```
+Then reboot using `sudo reboot`.
+
 
 ## Quick Start
 
@@ -78,9 +123,9 @@ This Docker Compose setup consists of **3 containers** for scalability:
    ```
 
 5. **Access the application:**
-Web interface: http://localhost:3000. Default login credentials are:
-      - User: `root`
-      - Password: `ioionrails`
+   Web interface: http://localhost:3000. Default login credentials are:
+   - User: `root`
+   - Password: `ioionrails`
 
 ## Language Setup
 
@@ -125,15 +170,15 @@ docker exec -i cafe-grader-db mysql -u root -p$MYSQL_ROOT_PASSWORD grader < back
 
 ```bash
 # Build worker only
-docker build -f Dockerfile.worker -t cafe-grader-worker .
+docker build -f worker.Dockerfile -t cafe-grader-worker .
 
 # Build web only  
-docker build -f Dockerfile.web -t cafe-grader-web .
+docker build -f web.Dockerfile -t cafe-grader-web .
 ```
 
 ### Fallback
 
-Both `Dockerfile`s (`Dockerfile.*`) use `git clone` to clone the latest version of Cafe Grader from https://github.com/nattee/cafe-grader-web. However, in case the newer version can't be built, please try to follow the following instructions.
+Both `Dockerfile`s (`*.Dockerfile`) use `git clone` to clone the latest version of Cafe Grader from https://github.com/nattee/cafe-grader-web. However, in case the newer version can't be built, please try to follow the following instructions.
 
 1. **Update submodule (in case this repo is outdated):**
 
@@ -173,13 +218,12 @@ Please uncomment the logs volume in the [`compose.yaml`](compose.yaml) file for 
 
 This containerization wouldn't be complete without the efforts of these people:
 
-- [My greatest TA of all time](https://github.com/PongDev): For advice during the [isolate](https://github.com/ioi/isolate) cgroup debugging process.
+- **My greatest TA of all time** [(PongDev)](https://github.com/PongDev): For advice during the [isolate](https://github.com/ioi/isolate) cgroup debugging process.
 
 ## Source
 
 - [Cafe Grader](https://github.com/nattee/cafe-grader-web) - The main grading platform
 - [IOI Isolate](https://github.com/ioi/isolate) - Secure sandbox system
-- Ubuntu/Debian communities for package management and system tools
 
 ## License
 
