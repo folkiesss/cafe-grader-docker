@@ -173,7 +173,7 @@ Please uncomment the logs volume in the [`compose.yaml`](compose.yaml) file for 
 
 This containerization wouldn't be complete without the efforts of these people:
 
-- **[My TA of all-time](https://github.com/PongDev)**: For advice during the [isolate](https://github.com/ioi/isolate) cgroup debugging process.
+- [My greatest TA of all time](https://github.com/PongDev): For advice during the [isolate](https://github.com/ioi/isolate) cgroup debugging process.
 
 ## Source
 
