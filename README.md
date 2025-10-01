@@ -1,75 +1,37 @@
 # Cafe Grader Docker
 
-A containerized version of the [Cafe Grader](https://github.com/nattee/cafe-grader-web) competitive programming judging system.
+A containerized version of the [CU Cafe Grader](https://github.com/nattee/cafe-grader-web) competitive programming judging system.
 
 ## Table of Contents
 
-- [Architecture](#architecture)
+- [Docker Architecture](#docker-architecture)
 - [Platform Compatibility](#platform-compatibility)
-- [Host System Requirements](#host-system-requirements)
 - [Quick Start](#quick-start)
-- [Supported Programming Languages](#supported-programming-languages)
+- [Default Credentials](#default-credentials)
+- [Language Setup](#language-setup)
+- [Data Persistence](#data-persistence)
 - [Development](#development)
+- [Logging](#logging)
+- [Acknowledgements](#acknowledgements)
+- [Source](#source)
 - [License](#license)
 
-## Architecture
+## Docker Architecture
 
-This Docker Compose setup consists of **3 containers** for scalabity:
+This Docker Compose setup consists of **3 containers** for scalability:
 
-- **cafe-grader-web**: Web interface for contest management
-- **cafe-grader-worker**: Background worker for code compilation and judging
-- **cafe-grader-db**: MySQL database for storing contest data
+- **cafe-grader-web**: Web interface for Cafe Grader management
+- **cafe-grader-worker**: Background worker for submission compilation and judging
+- **cafe-grader-db**: MySQL database for storing data
 
 ## Platform Compatibility
 
-✅ **Fully Supported (Native Linux)**: Complete IOI Isolate functionality with memory limits  
-⚠️ **Partial Support (WSL)**: Basic functionality, memory limits may be imprecise  
-⚠️ **Limited Support (macOS/Windows Docker Desktop)**: Worker will start but ***<u>SUBMISSIONS CANNOT BE JUDGED</u>***
-
-## Host System Requirements
-
-### Linux Host Configuration
-
-If deploying on a Linux server, you need to enable cgroup memory control and swap accounting:
-
-#### 1. Disable Memory Swap (Required for Accurate Memory Limits)
-
-IOI Isolate requires swap to be completely disabled for accurate memory measurement, as memory limits do not affect swapped-out data.
-
-```bash
-# Temporarily disable swap
-sudo swapoff -a
-
-# Permanently disable swap (edit /etc/fstab and comment out swap entries)
-sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-```
-
-#### 2. Enable Kernel Parameters
-
-Edit `/etc/default/grub` and modify/add the following line:
-
-```bash
-GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1"
-```
-
-#### 3. Update GRUB and Reboot
-
-```bash
-sudo update-grub
-sudo reboot
-```
-
-### Checking Worker Compatibility
-
-To verify that the worker container and IOI Isolate are functioning correctly, you can run the environment check:
-
-```bash
-# Check IOI Isolate environment compatibility
-docker exec -it cafe-grader-worker isolate-check-environment
-```
-
-### WSL
-- TBA
+- ✅ **Fully Supported (Native Linux & macOS)**:
+   - Complete IOI Isolate functionality with memory limits  
+- ⚠️ **Partial Support (WSL)**: 
+   - To be tested
+- ⚠️ **Not Tested (Windows Docker Desktop)**:
+   - To be tested
 
 ## Quick Start
 
@@ -81,14 +43,14 @@ docker exec -it cafe-grader-worker isolate-check-environment
 
 2. **Create environment file:**
    Create a `.env` file with the following variables:
-
    ```bash
    # Grader
    GRADER_PROCESSES=2
 
    # Python Packages for Judge Environment
    # Space-separated list of Python packages to install in the grader virtual environment
-   PYTHON_PACKAGES=numpy
+   # For example: PYTHON_PACKAGES=numpy pandas matplotlib scipy
+   PYTHON_PACKAGES=
 
    # MYSQL
    MYSQL_ROOT_PASSWORD=superStr@ngP@ssw0rd
@@ -107,20 +69,27 @@ docker exec -it cafe-grader-worker isolate-check-environment
 
 3. **Build and run:**
    ```bash
-   docker-compose up
+   docker-compose up -d
    ```
 
-4. **Access the application:**
-   - Web interface: http://localhost:3000
+4. **Start worker:**
+   ```bash
+   docker exec -it cafe-grader-worker bash -lc "./start_worker.sh &"
+   ```
 
-## Supported Programming Languages
+5. **Access the application:**
+Web interface: http://localhost:3000. Default login credentials are:
+      - User: `root`
+      - Password: `ioionrails`
+
+## Language Setup
 
 The worker container includes support for:
 
 **Tested:**
 - **Python**: Python 3 with numpy in virtual environment (`/venv/grader/`)
 
-**To be tested:**
+**To be tested (and updated for some languages):**
 - **C/C++**: GCC compiler
 - **Java**: OpenJDK 21 LTS
 - **Ruby**: Ruby 3.4.4 via RVM
@@ -129,6 +98,26 @@ The worker container includes support for:
 - **Go**: Go compiler
 - **Rust**: Rust compiler (cargo)
 - **Haskell**: Glasgow Haskell Compiler (GHC)
+
+Please refer to https://github.com/cafe-grader-team/cafe-grader-web/wiki/Language-Setup for specific details
+
+## Data Persistence
+
+The setup uses Docker volumes for data persistence:
+
+- **Database data**: Stored in `cafe-grader-db-data` volume
+- **Application data**: Stored in `cafe-grader-web-data` volume
+- **Logs**: Optional volume mounting (uncomment in `compose.yaml`)
+
+### Backup and Restore
+
+```bash
+# Backup database
+docker exec cafe-grader-db mysqldump -u root -p$MYSQL_ROOT_PASSWORD grader > backup.sql
+
+# Restore database
+docker exec -i cafe-grader-db mysql -u root -p$MYSQL_ROOT_PASSWORD grader < backup.sql
+```
 
 ## Development
 
@@ -142,16 +131,58 @@ docker build -f Dockerfile.worker -t cafe-grader-worker .
 docker build -f Dockerfile.web -t cafe-grader-web .
 ```
 
-### Accessing Container Logs
+### Fallback
 
-```bash
-# View all logs
-docker-compose logs
+Both `Dockerfile`s (`Dockerfile.*`) use `git clone` to clone the latest version of Cafe Grader from https://github.com/nattee/cafe-grader-web. However, in case the newer version can't be built, please try to follow the following instructions.
 
-# Follow specific service logs
-docker-compose logs -f cafe-grader-worker
-```
+1. **Update submodule (in case this repo is outdated):**
+
+   ```bash
+   git submodule update --remote
+   ```
+
+2. **Check out to a specific version that still works:**
+   ```bash
+   cd cafe-grader-web
+   git checkout <commit_sha>
+   ```
+
+3. **Edit this section in both `Dockerfile` then try to rebuild:**
+   ```Dockerfile
+   # clone cafe-grader-web
+   RUN git clone https://github.com/nattee/cafe-grader-web.git /cafe-grader/web
+
+   # fallback if the latest version of cafe-grader-web is not compatible
+   # COPY cafe-grader-web /cafe-grader/web
+   ```
+
+   It should look like this:
+   ```Dockerfile
+   # clone cafe-grader-web
+   # RUN git clone https://github.com/nattee/cafe-grader-web.git /cafe-grader/web
+
+   # fallback if the latest version of cafe-grader-web is not compatible
+   COPY cafe-grader-web /cafe-grader/web
+   ```
+
+## Logging
+
+Please uncomment the logs volume in the [`compose.yaml`](compose.yaml) file for saving logs.
+
+## Acknowledgements
+
+This containerization wouldn't be complete without the efforts of these people:
+
+- **[My TA of all-time](https://github.com/PongDev)**: For advice during the [isolate](https://github.com/ioi/isolate) cgroup debugging process.
+
+## Source
+
+- [Cafe Grader](https://github.com/nattee/cafe-grader-web) - The main grading platform
+- [IOI Isolate](https://github.com/ioi/isolate) - Secure sandbox system
+- Ubuntu/Debian communities for package management and system tools
 
 ## License
 
-MIT License - see LICENSE file for details
+This Docker containerization setup (Dockerfiles, compose configuration, and related scripts) is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+This containerization is provided as-is for educational and development purposes. Please refer to the [Cafe Grader project](https://github.com/nattee/cafe-grader-web) for licensing information about the main application.
