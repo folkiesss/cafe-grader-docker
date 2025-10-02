@@ -8,7 +8,7 @@ A containerized version of the [CU Cafe Grader](https://github.com/nattee/cafe-g
 - [Platform Compatibility](#platform-compatibility)
 - [Host Machine Setup](#host-machine-setup)
 - [Quick Start](#quick-start)
-- [Default Credentials](#default-credentials)
+- [Default Credential](#default-credential)
 - [Language Setup](#language-setup)
 - [Data Persistence](#data-persistence)
 - [Development](#development)
@@ -19,7 +19,7 @@ A containerized version of the [CU Cafe Grader](https://github.com/nattee/cafe-g
 
 ## Docker Architecture
 
-This Docker Compose setup consists of **3 containers** for scalability:
+This Docker Compose setup consists of **3 containers**:
 
 - **cafe-grader-web**: Web interface for Cafe Grader management
 - **cafe-grader-worker**: Background worker for submission compilation and judging
@@ -123,9 +123,12 @@ Then reboot using `sudo reboot`.
    ```
 
 5. **Access the application:**
-   Web interface: http://localhost:3000. Default login credentials are:
-   - User: `root`
-   - Password: `ioionrails`
+   Web interface: http://localhost:3000. 
+
+## Default Credential
+
+- User: `root`
+- Password: `ioionrails`
 
 ## Language Setup
 
@@ -218,11 +221,11 @@ Please uncomment the logs volume in the [`compose.yaml`](compose.yaml) file for 
 
 This containerization wouldn't be complete without the efforts of these people:
 
-- **My greatest TA of all time** [(PongDev)](https://github.com/PongDev): For advice during the [isolate](https://github.com/ioi/isolate) cgroup debugging process.
+- **My greatest TA of all time** ([PongDev](https://github.com/PongDev)): For advice during the [isolate](https://github.com/ioi/isolate) cgroup debugging process.
 
 ## Source
 
-- [Cafe Grader](https://github.com/nattee/cafe-grader-web) - The main grading platform
+- [Cafe Grader](https://github.com/nattee/cafe-grader-web) - The cafe-grader forks at Chula
 - [IOI Isolate](https://github.com/ioi/isolate) - Secure sandbox system
 
 ## License
