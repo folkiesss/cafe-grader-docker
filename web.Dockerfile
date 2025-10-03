@@ -21,18 +21,8 @@ RUN apt-add-repository -y ppa:rael-gc/rvm && \
     apt update && \
     apt install -y rvm
 
-# install nodejs 22.x
-RUN curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh && \
-    bash nodesource_setup.sh && \
-    apt install -y nodejs
-
-# install and enable Yarn
-RUN corepack enable && \
-    corepack prepare yarn@stable --activate
-
 # clone cafe-grader-web
 RUN git clone https://github.com/nattee/cafe-grader-web.git /cafe-grader/web
-
 # fallback if the latest version of cafe-grader-web is not compatible
 # COPY cafe-grader-web /cafe-grader/web
 
@@ -59,6 +49,15 @@ RUN sed -i 's/username: grader/username: <%= ENV.fetch("MYSQL_USER", "grader_use
     sed -i 's/password: grader/password: <%= ENV.fetch("MYSQL_PASSWORD", "grader_pass") %>/' /cafe-grader/web/config/database.yml && \
     sed -i 's/host: localhost/host: <%= ENV.fetch("SQL_DATABASE_CONTAINER_HOST", "cafe-grader-db") %>/' /cafe-grader/web/config/database.yml && \
     sed -i 's/socket: \/var\/run\/mysqld\/mysqld\.sock/port: <%= ENV.fetch("SQL_DATABASE_PORT", "3306") %>/' /cafe-grader/web/config/database.yml
+
+# install nodejs 22.x
+RUN curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh && \
+    bash nodesource_setup.sh && \
+    apt install -y nodejs
+
+# install and enable Yarn
+RUN corepack enable && \
+    corepack prepare yarn@stable --activate
 
 # install frontend dependencies
 RUN yarn
