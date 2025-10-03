@@ -3,7 +3,7 @@ FROM ubuntu:plucky
 # use bash as the default shell
 SHELL ["/bin/bash", "-lc"]
 
-# Install systemd and required packages
+# install systemd and required packages
 RUN apt update && apt install -y \ 
     apache2 \
     apache2-dev \
@@ -16,22 +16,13 @@ RUN apt update && apt install -y \
     postgresql-server-dev-all \
     unzip
 
-# install programming language compilers and runtimes
-RUN apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go cargo python3-venv
-
 # install RVM
 RUN apt-add-repository -y ppa:rael-gc/rvm && \
     apt update && \
     apt install -y rvm
 
-# install IOI Isolate (using cg2 branch for proper cgroup v2 support)
-RUN apt install -y libcap-dev libsystemd-dev
-RUN git clone https://github.com/ioi/isolate.git /isolate
-RUN cd isolate && make isolate && make install
-
 # clone cafe-grader-web
 RUN git clone https://github.com/nattee/cafe-grader-web.git /cafe-grader/web
-
 # fallback if the latest version of cafe-grader-web is not compatible
 # COPY cafe-grader-web /cafe-grader/web
 
@@ -62,15 +53,23 @@ RUN sed -i 's/username: grader/username: <%= ENV.fetch("MYSQL_USER", "grader_use
 # process worker configuration file
 RUN sed -i 's|web: http://localhost|web: http://cafe-grader-web:3000|' config/worker.yml
 
+# return to home directory
+WORKDIR /
+
+# install IOI Isolate (using cg2 branch for proper cgroup v2 support)
+RUN apt install -y libcap-dev libsystemd-dev
+RUN git clone https://github.com/ioi/isolate.git /isolate
+RUN cd isolate && make isolate && make install
+
+# install programming language compilers and runtimes
+RUN apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go cargo python3-venv
+
 # set up Python virtual environment for grader
 RUN python3 -m venv /venv/grader
 
 # add cron job to clean up isolate_submission directory
 RUN apt install -y cron
 RUN echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mtime +1 -exec rm -rf {} \\;" | crontab -
-
-# clean up apt cache and temporary files to reduce image size
-RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # copy systemd service file for set-ioi-isolate
 COPY scripts/set-ioi-isolate.service /etc/systemd/system/
@@ -81,6 +80,9 @@ RUN ln -s /isolate/systemd/isolate.service /etc/systemd/system/
 # copy start script and make it executable
 COPY scripts/start_worker.sh .
 RUN chmod +x start_worker.sh
+
+# clean up apt cache and temporary files to reduce image size
+RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # mount systemd as entrypoint
 ENTRYPOINT ["/usr/sbin/init"]
