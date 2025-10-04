@@ -14,6 +14,7 @@ RUN apt update && apt install -y \
     apt-transport-https \
     postgresql \
     postgresql-server-dev-all \
+    zip \
     unzip
 
 # install RVM
