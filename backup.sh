@@ -17,12 +17,14 @@ mkdir -p "${BACKUP_DIR}"
 
 echo "Starting Cafe Grader backup at $(date)"
 echo "=========================================="
+echo ""
+
 echo "Backup directory: ${BACKUP_DIR}"
 echo ""
 
 # Backup 1: Database (SQL Dump)
 echo "📦 Backing up database..."
-docker exec cafe-grader-db sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" grader' > "${BACKUP_DIR}/grader-database.sql"
+docker exec cafe-grader-db sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" grader' 2>/dev/null > "${BACKUP_DIR}/grader-database.sql"
 echo "✅ Database backup complete: ${BACKUP_DIR}/grader-database.sql"
 
 # Backup 2: Storage Volume (test cases, problem files, uploads)
@@ -41,7 +43,10 @@ docker run --rm \
   alpine tar czf "/backup/grader-cache.tar.gz" -C /data .
 echo "✅ Cache backup complete: ${BACKUP_DIR}/grader-cache.tar.gz"
 
+echo ""
 echo "=========================================="
+echo ""
+
 echo "🎉 Backup completed successfully!"
 echo ""
 
@@ -56,9 +61,9 @@ rm -rf "${BACKUP_DIR}"
 echo "🧹 Cleaned up temporary files"
 
 echo ""
-echo "Archive size:"
-ls -lh "${ARCHIVE_NAME}"
+echo "Archive:"
+ls -lh "${ARCHIVE_NAME}" | awk '{print $9, "(" $5 ")"}'
 
 echo ""
 echo "To restore from this backup, use:"
-echo "  ./restore.sh ${ARCHIVE_NAME}"
+echo "  ./restore.sh cafe-grader-backup-${TIMESTAMP}.tar.gz"
