@@ -153,19 +153,59 @@ Please refer to https://github.com/cafe-grader-team/cafe-grader-web/wiki/Languag
 
 The setup uses Docker volumes for data persistence:
 
-- **Database data**: Stored in `cafe-grader-db-data` volume
-- **Application data**: Stored in `cafe-grader-web-data` volume
+- **Database data**: Stored in `db_data` volume
+- **Storage data**: Stored in `cafe-grader-storage` volume (test cases, problem files, uploads)
+- **Cache data**: Stored in `cafe-grader-cache` volume (judge working directory)
 - **Logs**: Optional volume mounting (uncomment in `compose.yaml`)
 
 ### Backup and Restore
 
-```bash
-# Backup database
-docker exec cafe-grader-db mysqldump -u root -p$MYSQL_ROOT_PASSWORD grader > backup.sql
+This project includes automated backup and restore scripts for easy data management.
 
-# Restore database
-docker exec -i cafe-grader-db mysql -u root -p$MYSQL_ROOT_PASSWORD grader < backup.sql
+#### **Create a Backup**
+
+```bash
+./backup.sh
 ```
+
+This will create a timestamped backup archive in the `backups/` directory:
+
+```
+cafe-grader-docker/
+├── backup.sh
+├── restore.sh
+└── backups/
+    └── cafe-grader-backup-dd-mm-yyyy-hhmmss.tar.gz
+```
+
+The backup archive contains:
+- Database (SQL dump)
+- Storage volume (test cases, problem files, Active Storage files)
+- Cache volume (judge data, compiled submissions)
+
+#### **List Available Backups**
+
+```bash
+./restore.sh
+```
+
+This shows all available backup archives.
+
+#### **Restore from Backup**
+
+```bash
+./restore.sh <archive_file>
+```
+
+> **Note**: The `MYSQL_ROOT_PASSWORD` in your `.env` file must match the password used when the backup was created.
+
+#### **Migrate to Another Machine**
+
+1. Copy the backup archive to the target machine's `backups/` directory (using any method: USB drive, network transfer, cloud storage, etc.)
+
+2. **Place the backup** in the `backups/` directory.
+
+3. Restore the backup.
 
 ## Development
 
