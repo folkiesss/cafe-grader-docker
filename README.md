@@ -160,7 +160,7 @@ The setup uses Docker volumes for data persistence:
 
 ### Backup and Restore
 
-This project includes automated backup and restore scripts for easy data management.
+This repository includes automated backup and restore scripts for easy data management.
 
 #### **Create a Backup**
 
