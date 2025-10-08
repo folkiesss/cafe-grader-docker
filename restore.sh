@@ -69,14 +69,14 @@ fi
 # Restore 1: Database
 echo ""
 echo "📥 Restoring database..."
-docker exec -i cafe-grader-db sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" grader' < "${BACKUP_DIR}/grader-database.sql"
+docker exec -i cafe-grader-db sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" grader' 2>/dev/null < "${BACKUP_DIR}/grader-database.sql"
 echo "✅ Database restore complete"
 
 # Restore 2: Storage Volume
 echo "📥 Restoring storage volume..."
 docker run --rm \
   -v cafe-grader-docker_cafe-grader-storage:/data \
-  -v $(pwd)/${BACKUP_DIR}:/backup \
+  -v "${BACKUP_DIR}":/backup \
   alpine sh -c "rm -rf /data/* && cd /data && tar xzf /backup/grader-storage.tar.gz"
 echo "✅ Storage restore complete"
 
@@ -84,7 +84,7 @@ echo "✅ Storage restore complete"
 echo "📥 Restoring cache volume..."
 docker run --rm \
   -v cafe-grader-docker_cafe-grader-cache:/data \
-  -v $(pwd)/${BACKUP_DIR}:/backup \
+  -v "${BACKUP_DIR}":/backup \
   alpine sh -c "rm -rf /data/* && cd /data && tar xzf /backup/grader-cache.tar.gz"
 echo "✅ Cache restore complete"
 
@@ -94,9 +94,9 @@ echo "🎉 Restore completed successfully!"
 # Clean up extracted directory
 if [ "$CLEANUP_AFTER_RESTORE" = true ]; then
     echo "🧹 Cleaning up temporary files..."
-    rm -rf "${BACKUP_DIR}"
+    rm -rf "${TEMP_EXTRACT_DIR}"
 fi
 
 echo ""
 echo "You may need to restart the containers:"
-echo "  docker-compose restart"
+echo "  docker compose restart"
