@@ -30,16 +30,16 @@ echo "✅ Database backup complete: ${BACKUP_DIR}/grader-database.sql"
 # Backup 2: Storage Volume (test cases, problem files, uploads)
 echo "📦 Backing up storage volume..."
 docker run --rm \
-  -v $(pwd)_cafe-grader-storage:/data \
-  -v $(pwd)/${BACKUP_DIR}:/backup \
+  -v "$(pwd)"_cafe-grader-storage:/data \
+  -v "$(pwd)/${BACKUP_DIR}":/backup \
   alpine tar czf "/backup/grader-storage.tar.gz" -C /data .
 echo "✅ Storage backup complete: ${BACKUP_DIR}/grader-storage.tar.gz"
 
 # Backup 3: Cache Volume (judge data, compiled submissions)
 echo "📦 Backing up cache volume..."
 docker run --rm \
-  -v $(pwd)_cafe-grader-cache:/data \
-  -v $(pwd)/${BACKUP_DIR}:/backup \
+  -v "$(pwd)"_cafe-grader-cache:/data \
+  -v "$(pwd)/${BACKUP_DIR}":/backup \
   alpine tar czf "/backup/grader-cache.tar.gz" -C /data .
 echo "✅ Cache backup complete: ${BACKUP_DIR}/grader-cache.tar.gz"
 
