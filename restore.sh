@@ -91,7 +91,7 @@ echo "✅ Database restore complete"
 # Restore 2: Storage Volume
 echo "📥 Restoring storage volume..."
 docker run --rm \
-  -v cafe-grader-docker_cafe-grader-storage:/data \
+  -v "$(pwd)"_cafe-grader-storage:/data \
   -v "${BACKUP_DIR}":/backup \
   alpine sh -c "rm -rf /data/* && cd /data && tar xzf /backup/grader-storage.tar.gz"
 echo "✅ Storage restore complete"
@@ -99,7 +99,7 @@ echo "✅ Storage restore complete"
 # Restore 3: Cache Volume
 echo "📥 Restoring cache volume..."
 docker run --rm \
-  -v cafe-grader-docker_cafe-grader-cache:/data \
+  -v "$(pwd)"_cafe-grader-cache:/data \
   -v "${BACKUP_DIR}":/backup \
   alpine sh -c "rm -rf /data/* && cd /data && tar xzf /backup/grader-cache.tar.gz"
 echo "✅ Cache restore complete"
