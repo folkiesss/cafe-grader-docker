@@ -137,15 +137,15 @@ The worker container includes support for:
 
 **Tested:**
 - **Python**: Python 3 with numpy in virtual environment (`/venv/grader/`)
+- **C/C++**
+- **Go**
+- **Rust**
 
 **To be tested (and updated for some languages):**
-- **C/C++**: GCC compiler
 - **Java**: OpenJDK 21 LTS
 - **Ruby**: Ruby 3.4.4 via RVM
 - **Pascal**: Free Pascal Compiler (FPC)
 - **PHP**: PHP CLI
-- **Go**: Go compiler
-- **Rust**: Rust compiler (cargo)
 - **Haskell**: Glasgow Haskell Compiler (GHC)
 
 Please refer to https://github.com/cafe-grader-team/cafe-grader-web/wiki/Language-Setup for specific details
