@@ -51,6 +51,9 @@ RUN sed -i 's/username: grader/username: <%= ENV.fetch("MYSQL_USER", "grader_use
     sed -i 's/host: localhost/host: <%= ENV.fetch("SQL_DATABASE_CONTAINER_HOST", "cafe-grader-db") %>/' /cafe-grader/web/config/database.yml && \
     sed -i 's/socket: \/var\/run\/mysqld\/mysqld\.sock/port: <%= ENV.fetch("SQL_DATABASE_PORT", "3306") %>/' /cafe-grader/web/config/database.yml
 
+# add Docker attribution to footer (pattern-based, not hardcoded line number)
+RUN sed -i 's@| Revision: #{APP_VERSION}#{APP_VERSION_SUFFIX}@& (#{link_to "Docker", "https://github.com/folkiesss/cafe-grader-docker"})@' /cafe-grader/web/app/views/layouts/application.html.haml
+
 # install nodejs 22.x
 RUN curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh && \
     bash nodesource_setup.sh && \
