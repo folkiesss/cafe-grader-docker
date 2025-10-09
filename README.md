@@ -109,7 +109,7 @@ Then reboot using `sudo reboot`.
 
    # Rails Configuration
    RAILS_TIME_ZONE=Asia/Bangkok
-   SECRET_KEY_BASE=GENERATE_A_SECURE_KEY_BASE_FOR_PRODUCTION  # using `openssl rand -hex 64`
+   SECRET_KEY_BASE=GENERATE_A_SECURE_KEY_BASE_FOR_PRODUCTION  # can generate using `openssl rand -hex 64`
    ```
 
 3. **Build and run:**
@@ -154,7 +154,7 @@ Please refer to https://github.com/cafe-grader-team/cafe-grader-web/wiki/Languag
 
 The setup uses Docker volumes for data persistence:
 
-- **Database data**: Stored in `db_data` volume
+- **Database data**: Stored in `cafe-grader-db` volume
 - **Storage data**: Stored in `cafe-grader-storage` volume (test cases, problem files, uploads)
 - **Cache data**: Stored in `cafe-grader-cache` volume (judge working directory)
 - **Logs**: Optional volume mounting (uncomment in `compose.yaml`)
