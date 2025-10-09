@@ -10,7 +10,23 @@ if [ -z "$1" ]; then
     echo "Usage: $0 <archive_file>"
     echo ""
     echo "Available backup archives:"
-    ls -1 backups/cafe-grader-backup-*.tar.gz 2>/dev/null | sed 's|backups/||' | awk '{print "  " $0}' || echo "  No backups found"
+    
+    # List all backups sorted by time (newest first)
+    BACKUPS=$(ls -1t backups/cafe-grader-backup-*.tar.gz 2>/dev/null | sed 's|backups/||')
+    
+    if [ -z "$BACKUPS" ]; then
+        echo "  No backups found"
+    else
+        LATEST=$(echo "$BACKUPS" | head -1)
+        echo "$BACKUPS" | while read backup; do
+            if [ "$backup" = "$LATEST" ]; then
+                echo "  $backup (latest)"
+            else
+                echo "  $backup"
+            fi
+        done
+    fi
+    
     exit 1
 fi
 
