@@ -4,16 +4,8 @@
 swapoff -a
 echo 0 > /proc/sys/kernel/randomize_va_space
 
-# start isolate
-systemctl daemon-reload
-systemctl start set-ioi-isolate.service
-systemctl start isolate.service
-
 # verify isolate environment check
 isolate-check-environment
-
-# start cron
-# service cron start
 
 echo -e "Installing language support packages..."
 # Language support setup
