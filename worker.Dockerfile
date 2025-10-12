@@ -38,9 +38,9 @@ WORKDIR /cafe-grader/web
 RUN bundle
 
 # copy configuration files from samples and process environment variables
-RUN cp config/application.rb.SAMPLE config/application.rb
-RUN cp config/database.yml.SAMPLE config/database.yml
-RUN cp config/worker.yml.SAMPLE config/worker.yml
+RUN cp config/application.rb.SAMPLE config/application.rb && \
+    cp config/database.yml.SAMPLE config/database.yml && \
+    cp config/worker.yml.SAMPLE config/worker.yml
 
 # process application.rb to use environment variable for timezone
 RUN sed -i 's/config\.time_zone = "Asia\/Bangkok"/config.time_zone = ENV.fetch("RAILS_TIME_ZONE", "Asia\/Bangkok")/' /cafe-grader/web/config/application.rb
@@ -57,10 +57,10 @@ RUN sed -i 's|web: http://localhost|web: http://cafe-grader-web:3000|' config/wo
 # return to home directory
 WORKDIR /
 
-# install IOI Isolate (using cg2 branch for proper cgroup v2 support)
-RUN apt install -y libcap-dev libsystemd-dev
-RUN git clone https://github.com/ioi/isolate.git /isolate
-RUN cd isolate && make isolate && make install
+# install IOI Isolate
+RUN apt install -y libcap-dev libsystemd-dev && \
+    git clone https://github.com/ioi/isolate.git /isolate && \
+    cd isolate && make isolate && make install
 
 # install programming language compilers and runtimes
 RUN apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go cargo python3-venv
@@ -69,14 +69,14 @@ RUN apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go car
 RUN python3 -m venv /venv/grader
 
 # add cron job to clean up isolate_submission directory
-RUN apt install -y cron
-RUN echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mtime +1 -exec rm -rf {} \\;" | crontab -
+RUN apt install -y cron && \
+    echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mtime +1 -exec rm -rf {} \\;" | crontab -
 
 # copy systemd service file for set-ioi-isolate
 COPY scripts/set-ioi-isolate.service /etc/systemd/system/
 
-# create systemd service links
-RUN ln -s /isolate/systemd/isolate.service /etc/systemd/system/
+RUN systemctl enable isolate set-ioi-isolate && \
+    systemctl enable isolate.service
 
 # copy start script and make it executable
 COPY scripts/start_worker.sh .
