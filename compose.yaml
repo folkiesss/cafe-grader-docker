@@ -39,6 +39,7 @@ services:
     image: cafe-grader-worker:latest
     container_name: cafe-grader-worker
     privileged: true  # Required for systemd and IOI Isolate
+    tty: true
     volumes:
       - cafe-grader-cache:/cafe-grader/judge
     environment:

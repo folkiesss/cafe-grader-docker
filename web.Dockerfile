@@ -38,9 +38,9 @@ WORKDIR /cafe-grader/web
 RUN bundle
 
 # copy configuration files from samples and process environment variables
-RUN cp config/application.rb.SAMPLE config/application.rb
-RUN cp config/database.yml.SAMPLE config/database.yml
-RUN cp config/worker.yml.SAMPLE config/worker.yml
+RUN cp config/application.rb.SAMPLE config/application.rb && \
+    cp config/database.yml.SAMPLE config/database.yml && \
+    cp config/worker.yml.SAMPLE config/worker.yml
 
 # process application.rb to use environment variable for timezone
 RUN sed -i 's/config\.time_zone = "Asia\/Bangkok"/config.time_zone = ENV.fetch("RAILS_TIME_ZONE", "Asia\/Bangkok")/' /cafe-grader/web/config/application.rb
