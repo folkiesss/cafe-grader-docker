@@ -120,7 +120,7 @@ Then reboot using `sudo reboot`.
 
 4. **Start worker:**
    ```bash
-   docker exec cafe-grader-worker bash -lc "/start_worker.sh"
+   docker exec cafe-grader-worker bash -lc "./start_worker.sh"
    ```
 
 5. **Access the application:**
