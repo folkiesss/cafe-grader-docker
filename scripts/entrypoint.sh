@@ -1,14 +1,20 @@
 #!/bin/bash -l
 
-# Export Docker environment variables to a file for systemd services
-mkdir -p /etc/cafe-grader
+# Export Docker environment variables to a secure file for systemd services
+# Use tmpfs (RAM-only storage) - secrets never written to disk
+mkdir -p /dev/shm/cafe-grader
+chmod 700 /dev/shm/cafe-grader
 {
   echo "SECRET_KEY_BASE=${SECRET_KEY_BASE}"
   echo "MYSQL_USER=${MYSQL_USER}"
   echo "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
   echo "SQL_DATABASE_CONTAINER_HOST=${SQL_DATABASE_CONTAINER_HOST}"
   echo "SQL_DATABASE_PORT=${SQL_DATABASE_PORT}"
-} > /etc/cafe-grader/environment
+  echo "GRADER_PROCESSES=${GRADER_PROCESSES}"
+} > /dev/shm/cafe-grader/environment
+
+# Restrict permissions for security (only root can read/write)
+chmod 600 /dev/shm/cafe-grader/environment
 
 # turn off swap and address space layout randomization
 swapoff -a

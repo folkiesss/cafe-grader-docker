@@ -9,8 +9,8 @@ WorkingDirectory=/cafe-grader/web
 # Use full path to bundle and rails for better compatibility
 ExecStart=/bin/bash -lc 'cd /cafe-grader/web && bundle exec rails solid_queue:start'
 
-# Load environment variables from file created at container startup
-EnvironmentFile=-/etc/cafe-grader/environment
+# Load environment variables from secure file (stored in RAM only, never on disk)
+EnvironmentFile=-/dev/shm/cafe-grader/environment
 
 # Set the Rails environment to production
 Environment=RAILS_ENV=production

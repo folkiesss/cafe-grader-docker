@@ -1,0 +1,26 @@
+[Unit]
+Description=Cafe Grader Worker Processes
+After=network.target solid_queue.service
+Wants=solid_queue.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+KillMode=none
+WorkingDirectory=/cafe-grader/web
+
+# Execute the grader startup script
+ExecStart=/bin/bash -lc '/cafe-grader/scripts/start_worker.sh'
+
+# Load environment variables from secure file (stored in RAM only, never on disk)
+EnvironmentFile=-/dev/shm/cafe-grader/environment
+
+# Set the Rails environment to production
+Environment=RAILS_ENV=production
+
+# Standard output and error logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
