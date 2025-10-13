@@ -77,7 +77,8 @@ COPY services/*.service /etc/systemd/system/
 
 RUN systemctl enable isolate set-ioi-isolate && \
     systemctl enable isolate && \
-    systemctl enable solid_queue
+    systemctl enable solid_queue && \
+    systemctl enable grader_worker
 
 # copy start script and make it executable
 COPY scripts/entrypoint.sh cafe-grader/scripts/

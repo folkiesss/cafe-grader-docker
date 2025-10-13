@@ -118,12 +118,7 @@ Then reboot using `sudo reboot`.
    docker compose up -d
    ```
 
-4. **Start worker:**
-   ```bash
-   docker exec cafe-grader-worker bash -lc "./start_worker.sh"
-   ```
-
-5. **Access the application:**
+4. **Access the application:**
    Web interface: http://localhost:3000. 
 
 ## Default Credential
