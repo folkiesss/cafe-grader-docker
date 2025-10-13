@@ -59,8 +59,8 @@ WORKDIR /
 
 # install IOI Isolate
 RUN apt install -y libcap-dev libsystemd-dev && \
-    git clone https://github.com/ioi/isolate.git /isolate && \
-    cd isolate && make isolate && make install
+    git clone https://github.com/ioi/isolate.git /tmp/isolate && \
+    cd /tmp/isolate && make isolate && make install
 
 # install programming language compilers and runtimes
 RUN apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go cargo python3-venv
@@ -73,20 +73,22 @@ RUN apt install -y cron && \
     echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mtime +1 -exec rm -rf {} \\;" | crontab -
 
 # copy systemd service file for set-ioi-isolate
-COPY scripts/set-ioi-isolate.service /etc/systemd/system/
-COPY scripts/solid_queue.service /etc/systemd/system/
+COPY services/*.service /etc/systemd/system/
 
 RUN systemctl enable isolate set-ioi-isolate && \
     systemctl enable isolate && \
     systemctl enable solid_queue
 
 # copy start script and make it executable
-COPY scripts/entrypoint.sh .
-COPY scripts/start_worker.sh .
-RUN chmod +x entrypoint.sh start_worker.sh
+COPY scripts/entrypoint.sh cafe-grader/scripts/
+COPY scripts/start_worker.sh cafe-grader/scripts/
+RUN chmod +x \
+    cafe-grader/scripts/entrypoint.sh \
+    cafe-grader/scripts/start_worker.sh
 
 # clean up apt cache and temporary files to reduce image size
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# mount systemd as entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+# set working directory and entrypoint
+WORKDIR /cafe-grader/scripts
+ENTRYPOINT ["./entrypoint.sh"]
