@@ -74,16 +74,19 @@ RUN apt install -y cron && \
 
 # copy systemd service file for set-ioi-isolate
 COPY scripts/set-ioi-isolate.service /etc/systemd/system/
+COPY scripts/solid_queue.service /etc/systemd/system/
 
 RUN systemctl enable isolate set-ioi-isolate && \
-    systemctl enable isolate.service
+    systemctl enable isolate && \
+    systemctl enable solid_queue
 
 # copy start script and make it executable
+COPY scripts/entrypoint.sh .
 COPY scripts/start_worker.sh .
-RUN chmod +x start_worker.sh
+RUN chmod +x entrypoint.sh start_worker.sh
 
 # clean up apt cache and temporary files to reduce image size
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # mount systemd as entrypoint
-ENTRYPOINT ["/usr/sbin/init"]
+ENTRYPOINT ["/entrypoint.sh"]
