@@ -1,0 +1,25 @@
+[Unit]
+Description=Solid Queue for cafe-grader
+After=network.target
+
+[Service]
+# The directory where your Rails application is deployed in the container
+WorkingDirectory=/cafe-grader/web
+
+# Use full path to bundle and rails for better compatibility
+ExecStart=/bin/bash -lc 'cd /cafe-grader/web && bundle exec rails solid_queue:start'
+
+# Set the Rails environment to production
+Environment=RAILS_ENV=production
+Environment=RAILS_LOG_TO_STDOUT=true
+
+# Restart the service if it fails
+Restart=on-failure
+RestartSec=5s
+
+# Standard output and error logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
