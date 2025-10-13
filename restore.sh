@@ -52,6 +52,9 @@ echo "✅ Archive extracted"
 BACKUP_DIR="${TEMP_EXTRACT_DIR}/${EXTRACTED_DIR}"
 CLEANUP_AFTER_RESTORE=true
 
+# Get the parent directory name for Docker Compose volume prefix
+PROJECT_NAME=$(basename "$(pwd)")
+
 # Check if backup files exist
 if [ ! -f "${BACKUP_DIR}/grader-database.sql" ]; then
     echo "❌ Error: Database backup file not found: ${BACKUP_DIR}/grader-database.sql"
@@ -91,7 +94,7 @@ echo "✅ Database restore complete"
 # Restore 2: Storage Volume
 echo "📥 Restoring storage volume..."
 docker run --rm \
-  -v "$(pwd)"_cafe-grader-storage:/data \
+  -v "${PROJECT_NAME}_cafe-grader-storage":/data \
   -v "${BACKUP_DIR}":/backup \
   alpine sh -c "rm -rf /data/* && cd /data && tar xzf /backup/grader-storage.tar.gz"
 echo "✅ Storage restore complete"
@@ -99,7 +102,7 @@ echo "✅ Storage restore complete"
 # Restore 3: Cache Volume
 echo "📥 Restoring cache volume..."
 docker run --rm \
-  -v "$(pwd)"_cafe-grader-cache:/data \
+  -v "${PROJECT_NAME}_cafe-grader-cache":/data \
   -v "${BACKUP_DIR}":/backup \
   alpine sh -c "rm -rf /data/* && cd /data && tar xzf /backup/grader-cache.tar.gz"
 echo "✅ Cache restore complete"
