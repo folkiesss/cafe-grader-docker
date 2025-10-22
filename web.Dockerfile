@@ -24,6 +24,7 @@ RUN apt-add-repository -y ppa:rael-gc/rvm && \
 
 # clone cafe-grader-web
 RUN git clone https://github.com/nattee/cafe-grader-web.git /cafe-grader/web
+
 # fallback if the latest version of cafe-grader-web is not compatible
 # COPY cafe-grader-web /cafe-grader/web
 
