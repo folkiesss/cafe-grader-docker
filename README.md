@@ -133,12 +133,12 @@ The worker container includes support for:
 **Tested:**
 - **Python**
 - **C/C++**
+- **Java**
 - **Ruby**
 - **Go**
 - **Rust**
 
 **To be tested (and updated for some languages):**
-- **Java**
 - **Pascal**
 - **PHP**
 - **Haskell**

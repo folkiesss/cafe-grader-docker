@@ -69,6 +69,9 @@ RUN apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go car
 # set up Python virtual environment for grader
 RUN python3 -m venv /venv/grader
 
+# add Java path for isolate
+RUN sed -i "/when 'java'/,/when 'haskell'/ s|'-p -d /etc/alternatives'|'-p -d /etc:maybe -d /lib64:maybe'|" /cafe-grader/web/app/engine/judge_base.rb
+
 # add cron job to clean up isolate_submission directory
 RUN apt update && apt install -y cron && \
     echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mtime +1 -exec rm -rf {} \\;" | crontab - && \
