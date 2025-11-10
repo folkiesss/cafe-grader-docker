@@ -131,17 +131,17 @@ Then reboot using `sudo reboot`.
 The worker container includes support for:
 
 **Tested:**
-- **Python**: Python 3 with numpy in virtual environment (`/venv/grader/`)
+- **Python**
 - **C/C++**
+- **Java**
+- **Ruby**
 - **Go**
 - **Rust**
 
 **To be tested (and updated for some languages):**
-- **Java**: OpenJDK 21 LTS
-- **Ruby**: Ruby 3.4.4 via RVM
-- **Pascal**: Free Pascal Compiler (FPC)
-- **PHP**: PHP CLI
-- **Haskell**: Glasgow Haskell Compiler (GHC)
+- **Pascal**
+- **PHP**
+- **Haskell**
 
 Please refer to https://github.com/cafe-grader-team/cafe-grader-web/wiki/Language-Setup for specific details
 
