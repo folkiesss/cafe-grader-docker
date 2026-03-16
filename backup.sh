@@ -56,7 +56,10 @@ echo ""
 # Create portable archive in backups directory
 echo "📦 Creating portable archive..."
 ARCHIVE_NAME="backups/cafe-grader-backup-${TIMESTAMP}.tar.gz"
-tar czf "${ARCHIVE_NAME}" -C backups "${TIMESTAMP}"
+tar czf "${ARCHIVE_NAME}" -C backups \
+  "${TIMESTAMP}/grader-database.sql" \
+  "${TIMESTAMP}/grader-storage.tar.gz" \
+  "${TIMESTAMP}/grader-cache.tar.gz"
 echo "✅ Portable archive created: ${ARCHIVE_NAME}"
 
 # Remove the temporary backup directory to keep things clean
