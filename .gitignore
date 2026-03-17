@@ -6,4 +6,5 @@
 
 # backup files
 backups/*
-!backups/.gitkeep
+archives/*
+!archives/.gitkeep

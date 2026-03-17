@@ -5,6 +5,16 @@
 
 set -e  # Exit on error
 
+# Migrate legacy backups/ directory to archives/ if it exists
+if [ -d "backups" ]; then
+    echo "⚠️  Found legacy 'backups/' directory. Migrating to 'archives/' ..."
+    mkdir -p archives
+    mv backups/* archives/ 2>/dev/null || true
+    rmdir backups 2>/dev/null || true
+    echo "✅ Migration complete. All backup files have been moved to 'archives/'"
+    echo ""
+fi
+
 # Check if argument is provided
 if [ -z "$1" ]; then
     echo "Usage: $0 <archive_file>"
@@ -15,7 +25,7 @@ if [ -z "$1" ]; then
     BACKUPS=$(ls -1t archives/cafe-grader-backup-*.tar.gz 2>/dev/null | sed 's|archives/||')
     
     if [ -z "$BACKUPS" ]; then
-        echo "  No backups found"
+        echo "  No archives found"
     else
         LATEST=$(echo "$BACKUPS" | head -1)
         echo "$BACKUPS" | while read backup; do
@@ -30,11 +40,14 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-# Check if file exists as-is or in backups directory
+# Check if file exists as-is, in archives/, or in legacy backups/
 if [ -f "$1" ]; then
     ARCHIVE_FILE="$1"
 elif [ -f "archives/$1" ]; then
     ARCHIVE_FILE="archives/$1"
+elif [ -f "backups/$1" ]; then
+    echo "⚠️  Found archive in legacy 'backups/' directory. Please move your archives to 'archives/'"
+    ARCHIVE_FILE="backups/$1"
 else
     echo "❌ Error: Archive file not found: $1"
     echo "❌ Also checked: archives/$1"
