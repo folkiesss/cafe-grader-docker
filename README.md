@@ -164,13 +164,13 @@ This repository includes automated backup and restore scripts for easy data mana
 ./backup.sh
 ```
 
-This will create a timestamped backup archive in the `backups/` directory:
+This will create a timestamped backup archive in the `archives/` directory:
 
 ```
 cafe-grader-docker/
 ├── backup.sh
 ├── restore.sh
-└── backups/
+└── archives/
     └── cafe-grader-backup-dd-mm-yyyy-hhmmss.tar.gz
 ```
 
@@ -193,15 +193,23 @@ This shows all available backup archives.
 ./restore.sh <archive_file>
 ```
 
+For detailed step-by-step output, use the `--debug` flag:
+
+```bash
+./restore.sh --debug <archive_file>
+```
+
 > **Note**: The `MYSQL_ROOT_PASSWORD` in your `.env` file must match the password used when the backup was created.
 
 #### **Migrate to Another Machine**
 
-1. Copy the backup archive to the target machine's `backups/` directory (using any method: USB drive, network transfer, cloud storage, etc.)
+1. Copy the backup archive to the target machine's `archives/` directory (using any method: USB drive, network transfer, cloud storage, etc.)
 
-2. **Place the backup** in the `backups/` directory.
+2. **Place the backup** in the `archives/` directory.
 
 3. Restore the backup.
+
+> **Upgrading from an older version?** If you have an existing `backups/` directory, running `./restore.sh` will automatically migrate its contents to `archives/` for you.
 
 ## Development
 
