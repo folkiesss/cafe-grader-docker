@@ -5,12 +5,12 @@
 
 set -e  # Exit on error
 
-# Create backups directory if it doesn't exist
-mkdir -p backups
+# Create archives directory if it doesn't exist
+mkdir -p archives
 
 # Get current timestamp for backup directory name (DD-MM-YYYY-HHMMSS format)
 TIMESTAMP=$(date +"%d-%m-%Y-%H%M%S")
-BACKUP_DIR="backups/${TIMESTAMP}"
+BACKUP_DIR="archives/${TIMESTAMP}"
 
 # Create dedicated backup directory
 mkdir -p "${BACKUP_DIR}"
@@ -53,10 +53,10 @@ echo ""
 echo "🎉 Backup completed successfully!"
 echo ""
 
-# Create portable archive in backups directory
+# Create portable archive in archives directory
 echo "📦 Creating portable archive..."
-ARCHIVE_NAME="backups/cafe-grader-backup-${TIMESTAMP}.tar.gz"
-tar czf "${ARCHIVE_NAME}" -C backups \
+ARCHIVE_NAME="archives/cafe-grader-backup-${TIMESTAMP}.tar.gz"
+tar czf "${ARCHIVE_NAME}" -C archives \
   "${TIMESTAMP}/grader-database.sql" \
   "${TIMESTAMP}/grader-storage.tar.gz" \
   "${TIMESTAMP}/grader-cache.tar.gz"

@@ -12,7 +12,7 @@ if [ -z "$1" ]; then
     echo "Available backup archives:"
     
     # List all backups sorted by time (newest first)
-    BACKUPS=$(ls -1t backups/cafe-grader-backup-*.tar.gz 2>/dev/null | sed 's|backups/||')
+    BACKUPS=$(ls -1t archives/cafe-grader-backup-*.tar.gz 2>/dev/null | sed 's|archives/||')
     
     if [ -z "$BACKUPS" ]; then
         echo "  No backups found"
@@ -33,11 +33,11 @@ fi
 # Check if file exists as-is or in backups directory
 if [ -f "$1" ]; then
     ARCHIVE_FILE="$1"
-elif [ -f "backups/$1" ]; then
-    ARCHIVE_FILE="backups/$1"
+elif [ -f "archives/$1" ]; then
+    ARCHIVE_FILE="archives/$1"
 else
     echo "❌ Error: Archive file not found: $1"
-    echo "❌ Also checked: backups/$1"
+    echo "❌ Also checked: archives/$1"
     exit 1
 fi
 
