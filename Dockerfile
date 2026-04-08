@@ -76,7 +76,8 @@ WORKDIR /
 # install IOI Isolate
 RUN --mount=type=cache,target=/var/lib/apt/lists apt install -y libcap-dev libsystemd-dev
 
-RUN git clone https://github.com/ioi/isolate.git /tmp/isolate
+RUN git clone https://github.com/ioi/isolate.git /tmp/isolate \
+	&& cd /tmp/isolate && git checkout 9c84554
 
 RUN cd /tmp/isolate && make isolate && make install && \
 	rm -rf /tmp/* /var/tmp/* ~/.cache
