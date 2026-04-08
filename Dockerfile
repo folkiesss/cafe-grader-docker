@@ -64,17 +64,6 @@ FROM common AS web
 
 RUN sed -i 's@| Revision: #{APP_VERSION}#{APP_VERSION_SUFFIX}@& (#{link_to "Docker", "https://github.com/folkiesss/cafe-grader-docker"})@' /cafe-grader/web/app/views/layouts/application.html.haml
 
-# install nodejs 22.x
-RUN curl -sL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource_setup.sh && \
-	bash /tmp/nodesource_setup.sh && \
-	apt install -y nodejs && \
-	rm -rf /tmp/* /var/tmp/* /tmp/nodesource_setup.sh
-
-# install and enable Yarn
-RUN corepack enable && \
-	corepack prepare yarn@stable --activate && \
-	yarn
-
 RUN rm -rf /tmp/* /var/tmp/* ~/.cache
 
 FROM common AS worker
