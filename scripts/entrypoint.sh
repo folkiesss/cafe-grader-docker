@@ -32,4 +32,4 @@ fi
 
 echo -e "Language support packages installed."
 
-exec /usr/sbin/init
+exec "$@"

@@ -117,4 +117,9 @@ RUN rm -rf /tmp/* /var/tmp/*
 
 # set working directory and entrypoint
 WORKDIR /cafe-grader/scripts
+
+# set entrypoint
 ENTRYPOINT ["./entrypoint.sh"]
+
+# start the systemd services and keep the container running
+CMD ["/usr/sbin/init"]
