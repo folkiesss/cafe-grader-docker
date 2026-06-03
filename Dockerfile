@@ -1,12 +1,12 @@
-FROM ubuntu:plucky AS base
+FROM ubuntu:noble AS base
 
 # use bash as the default shell
 SHELL ["/bin/bash", "-lc"]
 
-RUN --mount=type=cache,target=/var/lib/apt/lists apt update
+RUN --mount=type=cache,target=/var/lib/apt/lists apt-get update
 
 # install required packages
-RUN --mount=type=cache,target=/var/lib/apt/lists apt install -y \ 
+RUN --mount=type=cache,target=/var/lib/apt/lists apt-get install -y \ 
 	apache2 \
 	apache2-dev \
 	git \
@@ -22,8 +22,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists apt install -y \
 
 # install RVM
 RUN --mount=type=cache,target=/var/lib/apt/lists apt-add-repository -y ppa:rael-gc/rvm && \
-	apt update && \
-	apt install -y rvm && \
+	apt-get update && \
+	apt-get install -y rvm && \
 	rm -rf /tmp/* /var/tmp/*
 
 FROM base AS common
@@ -74,7 +74,7 @@ RUN	sed -i 's|web: http://localhost|web: http://cafe-grader-web:3000|' config/wo
 WORKDIR /
 
 # install IOI Isolate
-RUN --mount=type=cache,target=/var/lib/apt/lists apt install -y libcap-dev libsystemd-dev
+RUN --mount=type=cache,target=/var/lib/apt/lists apt-get install -y libcap-dev libsystemd-dev
 
 RUN git clone https://github.com/ioi/isolate.git /tmp/isolate \
 	&& cd /tmp/isolate && git checkout 9c84554
@@ -83,7 +83,7 @@ RUN cd /tmp/isolate && make isolate && make install && \
 	rm -rf /tmp/* /var/tmp/* ~/.cache
 
 # install programming language compilers and runtimes
-RUN --mount=type=cache,target=/var/lib/apt/lists apt install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go cargo python3-venv && \
+RUN --mount=type=cache,target=/var/lib/apt/lists apt-get install -y ghc g++ openjdk-21-jdk fpc php-cli php-readline golang-go cargo python3-venv && \
 	rm -rf /tmp/* /var/tmp/*
 
 # set up Python virtual environment for grader
@@ -93,7 +93,7 @@ RUN python3 -m venv /venv/grader
 RUN sed -i "/when 'java'/,/when 'haskell'/ s|'-p -d /etc/alternatives'|'-p -d /etc:maybe -d /lib64:maybe'|" /cafe-grader/web/app/engine/judge_base.rb
 
 # add cron job to clean up isolate_submission directory
-RUN apt update && apt install -y cron && \
+RUN apt-get update && apt-get install -y cron && \
 	echo "0 2 * * * find /cafe-grader/judge/isolate_submission/ -maxdepth 1 -mtime +1 -exec rm -rf {} \\;" | crontab - && \
 	rm -rf /tmp/* /var/tmp/*
 
