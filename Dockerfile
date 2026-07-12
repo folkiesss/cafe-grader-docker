@@ -3,22 +3,20 @@ FROM ubuntu:noble AS base
 # use bash as the default shell
 SHELL ["/bin/bash", "-lc"]
 
-RUN --mount=type=cache,target=/var/lib/apt/lists apt-get update
-
-# install required packages
-RUN --mount=type=cache,target=/var/lib/apt/lists apt-get install -y \ 
-	apache2 \
-	apache2-dev \
-	git \
-	software-properties-common \
-	libmysqlclient-dev \
-	libcap-dev \
-	apt-transport-https \
-	postgresql \
-	postgresql-server-dev-all \
-	zip \
-	unzip && \
-	rm -rf /tmp/* /var/tmp/*
+# Update lists and install required packages in a single step
+RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y \
+    git \
+    software-properties-common \
+    libmysqlclient-dev \
+    libpq-dev \
+    libcap-dev \
+    apt-transport-https \
+    zip \
+    unzip && \
+    rm -rf /tmp/* /var/tmp/*
 
 # install RVM
 RUN --mount=type=cache,target=/var/lib/apt/lists apt-add-repository -y ppa:rael-gc/rvm && \
@@ -48,8 +46,7 @@ WORKDIR /cafe-grader/web
 RUN bundle
 
 # copy configuration files from samples and process environment variables
-RUN cp config/application.rb.SAMPLE config/application.rb && \
-	cp config/database.yml.SAMPLE config/database.yml && \
+RUN cp config/database.yml.SAMPLE config/database.yml && \
 	cp config/worker.yml.SAMPLE config/worker.yml
 
 # process application.rb to use environment variable for timezone
@@ -100,10 +97,7 @@ RUN apt-get update && apt-get install -y cron && \
 # copy systemd service files
 COPY services/*.service /etc/systemd/system/
 
-RUN systemctl enable isolate set-ioi-isolate && \
-	systemctl enable isolate && \
-	systemctl enable solid_queue && \
-	systemctl enable grader_worker
+RUN systemctl enable isolate set-ioi-isolate solid_queue grader_worker
 
 # copy start script and make it executable
 COPY scripts/entrypoint.sh cafe-grader/scripts/
@@ -112,8 +106,6 @@ RUN chmod +x \
 	cafe-grader/scripts/entrypoint.sh \
 	cafe-grader/scripts/start_worker.sh
 
-# clean up apt cache and temporary files to reduce image size
-RUN rm -rf /tmp/* /var/tmp/*
 
 # set working directory and entrypoint
 WORKDIR /cafe-grader/scripts
